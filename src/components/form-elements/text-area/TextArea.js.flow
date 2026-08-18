@@ -6,6 +6,16 @@ import TextAreaCore from '../../text-area';
 import * as messages from '../input-messages';
 import FormInput from '../form/FormInput';
 
+type TextAreaValidationError = {
+    code: string,
+    message?: React.Node,
+};
+
+type TextAreaError = {
+    code?: string,
+    message?: React.Node,
+};
+
 type Props = {
     autoFocus?: boolean,
     /** Add a class to the component */
@@ -22,8 +32,8 @@ type Props = {
     name: string,
     /** Placeholder for the text area */
     placeholder?: string,
-    /** Validation function that returns an error string or a promise that resolves to an error string */
-    validation?: Function,
+    /** Validation function that returns an error object (`code`, optional `message`) or a falsy value when valid */
+    validation?: (value: string) => TextAreaValidationError | null | void,
     /** Default value of the text area */
     value: string,
 };
@@ -133,6 +143,7 @@ class TextArea extends React.Component<Props, State> {
                 textarea.setCustomValidity('');
             }
         } else {
+            textarea.setCustomValidity('');
             this.setErrorFromValidityState(textarea.validity);
         }
     };
@@ -146,6 +157,7 @@ class TextArea extends React.Component<Props, State> {
             isRequired,
             isResizable,
             label,
+            maxLength,
             name,
             placeholder,
         } = this.props;
@@ -162,6 +174,7 @@ class TextArea extends React.Component<Props, State> {
                         label={label}
                         isRequired={isRequired}
                         isResizable={isResizable}
+                        maxLength={maxLength}
                         name={name}
                         onBlur={this.checkValidity}
                         onChange={this.onChange}
