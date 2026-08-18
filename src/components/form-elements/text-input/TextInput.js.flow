@@ -6,6 +6,13 @@ import TextInputCore from '../../text-input';
 import * as messages from '../input-messages';
 import FormInput from '../form/FormInput';
 
+export type TextInputValidationError = {
+    code: string,
+    message: React.Node,
+};
+
+export type TextInputValidationResult = TextInputValidationError | null | void | false;
+
 type Props = {
     /** Whether to automatically focus the input */
     autoFocus?: boolean,
@@ -32,8 +39,8 @@ type Props = {
     placeholder?: string,
     /** html input types (email, url, text, number), defaults to 'text' */
     type?: string,
-    /** Function that should either return an error string when inValid and an empty string when valid. It can also return a Promise that resolves to an error string or empty string for server validations. */
-    validation?: Function,
+    /** Custom validation. Returns `{ code, message }` when invalid, or a falsy value when valid. */
+    validation?: (value: string) => TextInputValidationResult,
     /** Value of the text input */
     value: string,
 };
@@ -86,7 +93,7 @@ class TextInput extends React.Component<Props, State> {
     };
 
     onValidityStateUpdateHandler = (error: Object) => {
-        if (error.valid !== undefined) {
+        if ('valid' in error) {
             this.setErrorFromValidityState(error);
         } else {
             this.setState({
@@ -96,16 +103,8 @@ class TextInput extends React.Component<Props, State> {
     };
 
     setErrorFromValidityState(validityState: ValidityState) {
-        const {
-            badInput,
-            customError,
-            patternMismatch,
-            tooLong,
-            tooShort,
-            typeMismatch,
-            valid,
-            valueMissing,
-        } = validityState;
+        const { badInput, customError, patternMismatch, tooLong, tooShort, typeMismatch, valid, valueMissing } =
+            validityState;
 
         const { isRequired, minLength, maxLength, type, validation } = this.props;
 
@@ -161,6 +160,7 @@ class TextInput extends React.Component<Props, State> {
                 input.setCustomValidity('');
             }
         } else {
+            input.setCustomValidity('');
             this.setErrorFromValidityState(input.validity);
         }
     };
@@ -219,5 +219,7 @@ class TextInput extends React.Component<Props, State> {
         );
     }
 }
+
+export type TextInputProps = Props;
 
 export default TextInput;
